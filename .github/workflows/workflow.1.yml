@@ -1,25 +1,72 @@
-name: release
+name: Go Build and Release
 
 on:
   push:
     tags:
-      - v**
-  
+      - 'v*'
+
 jobs:
   build:
-    name: Build application
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+
+    env:
+      VERSION: ${{ github.ref }}
+      TIME: ${{ github.event.head_commit.timestamp }}
+
     steps:
-      - name: "☁️ checkout repository"
-        uses: actions/checkout@v2
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-  release:
-    environment:
-      name: prod
-      url: https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic-release.outputs.release-tag }}
-    name: Semantic Release
-    needs: 
-      - build
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20.2'
 
-    
+    - name: Set up Environment Variables
+      run: |
+        echo "export GOROOT=/usr/local/go" >> $GITHUB_ENV
+        echo "export PATH=$PATH:$GOROOT/bin" >> $GITHUB_ENV
+        echo "VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
+        echo "TIME=${{ env.TIME }}" >> $GITHUB_ENV
+
+    - name: Build
+      run: go build -v -ldflags="-X 'jr/cmd.Version=$(VERSION)' -X 'jr/cmd.BuildUser=pipeline' -X 'jr/cmd.BuildTime=$(TIME)'" -o build/jr jr.go
+
+    - name: Test
+      run: go test -v ./...
+
+    # - name: Zip Binary
+    #   run: zip myapp.zip myapp
+
+    # - name: Create Release
+    #   id: create_release
+    #   uses: actions/create-release@v1.0.0
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ github.ref }}
+    #     release_name: Release ${{ github.ref }}
+    #     body: |
+    #       Created by github action
+    #     draft: false
+    #     prerelease: false
+
+    # - name: Upload Release Asset
+    #   uses: actions/upload-release-asset@v1.0.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #     asset_path: ./myapp.zip
+    #     asset_name: myapp.zip
+    #     asset_content_type: application/zip
+
+    # - name: Download Release Asset
+    #   uses: actions/download-artifact@v2
+    #   with:
+    #     name: myapp
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # - name: Deploy Release
+    #   run: ./myapp
