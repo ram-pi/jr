@@ -1,4 +1,4 @@
-VERSION=0.2.1
+VERSION=0.2.4
 USER=$(shell id -u -n)
 TIME=$(shell date)
 
@@ -12,7 +12,10 @@ generate:
 compile:
 	@echo "Compiling"
 	go build -v -ldflags="-X 'github.com/ugol/jr/cmd.Version=$(VERSION)' -X 'github.com/ugol/jr/cmd.BuildUser=$(USER)' -X 'github.com/ugol/jr/cmd.BuildTime=$(TIME)'" -o build/jr jr.go
-        GOOS=darwin GOARCH=amd64 go build -v -ldflags="-X 'github.com/ugol/jr/cmd.Version=$(VERSION)' -X 'github.com/ugol/jr/cmd.BuildUser=$(USER)' -X 'github.com/ugol/jr/cmd.BuildTime=$(TIME)'" -o build/jr-v$(VERSION)-darwin-amd64
+
+amd64_build:
+	@echo "Build for darwin amd64"
+	GOOS=darwin GOARCH=amd64 go build -v -ldflags="-X 'github.com/ugol/jr/cmd.Version=$(VERSION)' -X 'github.com/ugol/jr/cmd.BuildUser=$(USER)' -X 'github.com/ugol/jr/cmd.BuildTime=$(TIME)'" -o build/jr-v$(VERSION)-darwin-amd64
 
 run: compile
 	./build/jr
@@ -48,6 +51,4 @@ copy_templates:
 install:
 	install build/jr /usr/local/bin
 
-all: hello generate compile
-
-
+all: hello generate compile amd64_build
