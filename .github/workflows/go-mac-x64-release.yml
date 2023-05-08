@@ -31,4 +31,4 @@ jobs:
         prerelease: false
         title: darwin-amd64
         files: |
-          build/jr
+          build/*
