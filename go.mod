@@ -2,6 +2,8 @@ module github.com/ugol/jr
 
 go 1.22.4
 
+replace "github.com/ugol/jr/pkg/types" => "../../types"
+
 require (
 	cloud.google.com/go/storage v1.43.0
 	github.com/actgardner/gogen-avro/v10 v10.2.1
